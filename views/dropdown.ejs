@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $(document).ready(function() {
+            // When the country dropdown changes
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    // Filter states based on selected country code
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates);
+
+                    // Populate the state dropdown with state_code as the value
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.state_code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+           
+            // When the state dropdown changes
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                const selectedCountryCode = $('#countryDropdown').val(); // Get the country code as well
+                console.log('Selected State Code:', selectedStateCode);
+                console.log('Selected Country Code:', selectedCountryCode);
+
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedStateCode && selectedCountryCode) {
+                    // Filter cities based on both state code and country code
+                    const filteredCities = cities.filter(city => 
+                        city.state_code === selectedStateCode && city.country_code === selectedCountryCode
+                    );
+                    console.log('Filtered Cities:', filteredCities);
+
+                    // Populate the city dropdown
+                    $.each(filteredCities, function(index, city) {
+                        $('#cityDropdown').append(`<option value="${city.id}">${city.name}</option>`);
+                    });
+                }
+            });
+            
+        });
+        
+    </script>
+</body>
+</html>

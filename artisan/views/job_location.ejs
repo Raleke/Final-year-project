@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        h3 a {
+            color: #333;
+        }
+
+        .search-form {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-color: #ddd;
+        }
+
+        .search-form input[type="text"],
+        .search-form select {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 5px;
+        }
+
+        .search-form input[type="submit"] {
+            padding: 5px 15px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .artisan-details {
+            background-color: #fff;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .about {
+            border: 1px solid green;
+            padding: 20px;
+            margin: 20px;
+            width: 700px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+           margin-left: 280px;
+        }
+
+        .about h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .about p {
+            text-align: justify;
+            line-height: 1.6;
+            color: #666;
+        }
+
+
+        .advert-container {
+            border: 2px dotted #ccc;
+            width: 90%;
+            height: 200px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+        }
+        .advert-x {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .advert-x::before,
+        .advert-x::after {
+            content: '';
+            position: absolute;
+            width: 25%;
+            height: 2px;
+            background-color: #ccc;
+            top: 50%;
+            left: 50%;
+            z-index: 0;
+        }
+        .advert-x::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .advert-x::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        .advert-input {
+            position: relative;
+            z-index: 1;
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+            border: none;
+            background: none;
+            text-align: center;
+            outline: none;
+            width: 90%;
+        }
+
+        input::placeholder {
+    font-style: italic;
+}
+
+    </style>
+</head>
+
+
+
+<body>
+    <h3><a href="/">ARTISAN OGBUEFI</a></h3>
+
+    <!-- <div class="about">
+        <h2>About Artisan Ogbuefi</h2>
+        <p>Artisan Ogbuefi is a platform dedicated to connecting skilled artisans with the people who need their services. We understand the importance of skilled labor and aim to bridge the gap between artisans and potential clients. Our platform allows artisans to showcase their skills and enables users to find the right artisan for their needs. Whether you're a carpenter, a plumber, a painter, or a craftsman, Artisan Ogbuefi is the place for you.</p> -->
+    </div>
+    <div class="search-form">
+    <form action="/locationsearch" method="post">
+        
+        <input type="text" name="SearchParam" size="50" placeholder="Search for Skillset">
+
+        <% let states = ["Abia","Adamawa","Akwaibom","Bauchi","Bayelsa","Cross-River","Delta","Enugu","Edo","Jigawa","Lagos","Oyo","Plateau","Osun","Kano","Kaduna","Katsina","Rivers","Zamfara","Taraba","Gombe","Kogi","Kwara","Ogun","Fct","Anambra","Imo state","Ebonyi"]%>
+
+            <p>State of Residence:
+                <select name="residence">
+                    <option value="">Select State of Residence</option>
+
+                    <% states.forEach((stat)=>
+                    { %>
+                        <option value="<%- stat %>"><%- stat %></option>
+                   <% }) %>
+                </select>
+            </p>
+         
+
+             
+        <input type="submit" value="Search">
+    </form>
+</div>
+
+<div class="advert-container">
+    <div class="advert-x"></div>
+    <input type="text" class="advert-input" placeholder="Place Advert Here" onfocus="this.previousElementSibling.style.display='none';" onblur="if(this.value === '') this.previousElementSibling.style.display='block';">
+</div>
+
+    <h3><%- SearchParam %></h3>
+    <p><%- message %></p> <!-- Always display the message -->
+    <% if (results.length > 0) { %>
+
+        <% results.forEach((skill) => { %>
+            <div class="artisan-details">
+                <h4>Name: <%- skill.fn %> <%- skill.ln %></h4>
+                <h5>Residence: <%- skill.residence %></h5>
+                <h5>Email:<%- skill.email %></h5>
+            <h5>CacStatus:<%- skill.cacStatus %></h5>
+                <a href="/artisan/<%- skill._id %>">View Profile</a>
+            </div>
+        <% }) %>
+          
+    <% } %>
+</body>
+</html>

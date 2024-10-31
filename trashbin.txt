@@ -1,0 +1,3629 @@
+pp.use('/', indexRouter);
+ 
+const indexRouter = require('./route/index');
+ 
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const ejs = require("ejs");
+const session = require("express-session");
+const flash = require("connect-flash");
+const dataRoutes = require('./route/dataRoutes'); 
+const dataController = require('./controller/dataController'); 
+const path = require('path');
+const indexRouter = require('./route/index');
+const app = express();
+
+app.set("view engine", "ejs");
+app.use(express.static("public"));
+app.use(express.urlencoded({extended:true}));
+
+  app.use(express.urlencoded({ extended: true }));
+
+  mongoose.connect("mongodb://127.0.0.1:27017/Final year Project");
+
+  app.use(session({
+    secret:"mysecretkey",
+    resave:true,
+    saveUninitialized:true
+}))
+
+app.use(flash());
+app.use((req,res,next) => {
+    res.locals.message = req.flash("message");
+    res.locals.error_msg = req.flash("error_msg");
+
+    next();
+})
+
+  app.use('/', dataRoutes);
+ 
+
+  module.exports = app; 
+
+  app.listen(3000, () => console.log("Server started at port 3000"));
+
+ 
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f9f9f9;
+    margin: 0;
+}
+
+#kpi-dashboard {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+svg {
+    font-family: 'Arial', sans-serif;
+}
+
+.value {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.axis .domain, .axis .tick line {
+    stroke: #ddd;
+}
+ 
+// Error handling middleware
+  app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  });
+ 
+ app.use(session({
+    secret: "mysecretkey",
+    resave: true,
+    saveUninitialized: true,
+  }));
+
+  app.use(flash());
+
+  app.use((req, res, next) => {
+    res.locals.message = req.flash("message");
+    res.locals.error_msg = req.flash("error_msg");
+    next();
+  });
+ 
+});
+ 
+ app.use('/', indexRouter);
+ 
+dataController.loadData(() => {
+  app.set("view engine", "ejs");
+  
+  // Updated static file serving
+  app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      }
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+    }
+  }));
+ 
+// main.js
+
+// Wait for the DOM to fully load before executing the script
+document.addEventListener('DOMContentLoaded', function () {
+    // Fetch KPI data from the server
+    fetch('/data/kpi-data') // Ensure this matches your route
+        .then(response => {
+            // Check if the response is OK
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Parse the JSON data from the response
+            return response.json();
+        })
+        .then(data => {
+            console.log(data); // Log the fetched JSON data to the console
+            visualizeKPI(data); // Call a function to visualize the data
+        })
+        .catch(error => {
+            // Handle any errors that occur during the fetch
+            console.error('Error fetching data:', error);
+        });
+});
+
+// Function to visualize KPI data using D3.js
+function visualizeKPI(kpiData) {
+    // Visualization code (as described previously)
+    const width = 600;
+    const height = 400;
+    const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+
+    const svg = d3.select("#kpi-dashboard")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const x = d3.scaleBand()
+        .domain(kpiData.map(d => d.name))
+        .range([margin.left, width - margin.right])
+        .padding(0.1);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(kpiData, d => d.value)]).nice()
+        .range([height - margin.bottom, margin.top]);
+
+    svg.append("g")
+        .selectAll("rect")
+        .data(kpiData)
+        .enter().append("rect")
+        .attr("x", d => x(d.name))
+        .attr("y", d => y(d.value))
+        .attr("height", d => y(0) - y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("fill", "steelblue");
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x));
+
+    svg.append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y));
+}
+ 
+const express = require('express');
+const router = express.Router();
+
+
+router.get('/kpi-data', (req, res) => {
+    const kpiData = [
+        { name: 'Artisan Performance', value: 75 },
+        { name: 'Service Quality', value: 88 },
+        { name: 'Platform Efficiency', value: 92 },
+        { name: 'Demand Tracking', value: 80 },
+        { name: 'Customer Satisfaction', value: 85 }
+    ];
+    res.json(kpiData); 
+});
+
+module.exports = router;
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPI Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="kpi-dashboard"></div>
+
+    <script src="/js/d3.min.js"></script>
+    <script src="/js/main.js"></script>
+
+ 
+   
+</body>
+</html>
+ 
+const express = require('express');
+const router = express.Router();
+
+
+router.get('/kpi-data', (req, res) => {
+    const kpiData = [
+        { name: 'Artisan Performance', value: 75 },
+        { name: 'Service Quality', value: 88 },
+        { name: 'Platform Efficiency', value: 92 },
+        { name: 'Demand Tracking', value: 80 },
+        { name: 'Customer Satisfaction', value: 85 }
+    ];
+    res.json(kpiData); 
+});
+
+module.exports = router;
+ 
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/kpi-data')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data received:", data); // Check data in console
+
+            const svgWidth = 600, svgHeight = 400;
+            const barPadding = 10;
+            const barWidth = (svgWidth / data.length) - barPadding;
+
+            const svg = d3.select("#kpi-dashboard")
+                .append("svg")
+                .attr("width", svgWidth)
+                .attr("height", svgHeight);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, 100])
+                .range([svgHeight, 0]);
+
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.name))
+                .range([0, svgWidth])
+                .padding(0.1);
+
+            const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                .domain([0, 100]);
+
+            svg.selectAll("rect")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("x", d => xScale(d.name))
+                .attr("y", d => yScale(d.value))
+                .attr("width", barWidth)
+                .attr("height", d => svgHeight - yScale(d.value))
+                .attr("fill", d => colorScale(d.value));
+
+            svg.selectAll("text.value")
+                .data(data)
+                .enter()
+                .append("text")
+                .classed("value", true)
+                .attr("x", d => xScale(d.name) + barWidth / 2)
+                .attr("y", d => yScale(d.value) - 5)
+                .attr("text-anchor", "middle")
+                .text(d => d.value)
+                .attr("fill", "#333");
+
+            svg.append("g")
+                .attr("transform", `translate(0,${svgHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .call(d3.axisLeft(yScale));
+        })
+        .catch(error => console.error("Error fetching data:", error)); // Catch any data fetching errors
+});
+ 
+// Sample KPI data route
+ 
+// Ensure this sends JSON data
+ 
+const express = require('express');
+const router = express.Router();
+
+
+const kpiData = [
+    { name: 'Artisan Performance', value: 75 },
+    { name: 'Service Quality', value: 88 },
+    { name: 'Platform Efficiency', value: 92 },
+    { name: 'Demand Tracking', value: 80 },
+    { name: 'Customer Satisfaction', value: 85 }
+];
+
+
+router.get('/', (req, res) => {
+    res.redirect('/kpi-data'); 
+});
+
+
+router.get('/kpi-data', (req, res) => {
+    res.render('index', { kpiData });
+});
+
+module.exports = router;
+ 
+   <script>
+        // Pass the kpiData to the D3 script
+        const kpiData = <%= JSON.stringify(kpiData) %>;
+    </script>
+ 
+/
+ 
+
+ 
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const ejs = require("ejs");
+const session = require("express-session");
+const flash = require("connect-flash");
+const dataRoutes = require('./route/dataRoutes'); 
+const dataController = require('./controller/dataController'); 
+const path = require('path');
+const indexRouter = require('./route/index');
+const app = express();
+
+dataController.loadData(() => {
+
+
+app.set("view engine", "ejs");
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+
+mongoose.connect("mongodb://127.0.0.1:27017/Final year Project");
+
+app.use(session({
+    secret: "mysecretkey",
+    resave: true,
+    saveUninitialized: true,
+}));
+
+app.use(flash());
+
+app.use((req, res, next) => {
+    res.locals.message = req.flash("message");
+    res.locals.error_msg = req.flash("error_msg");
+    next();
+});
+
+
+app.use('/', dataRoutes);
+app.use('/', indexRouter);
+
+app.listen(3000, () => console.log("Server started at port 3000"));
+});
+ 
+// Sample KPI data
+ 
+// Redirect to the KPI data route
+ 
+// Route to send KPI data
+ 
+// Redirect to the KPI data route
+ 
+const express = require('express');
+const router = express.Router();
+
+// Render index.ejs and pass KPI data to the view
+router.get('/', (req, res) => {
+    const kpiData = [
+        { name: 'Artisan Performance', value: 75 },
+        { name: 'Service Quality', value: 88 },
+        { name: 'Platform Efficiency', value: 92 },
+        { name: 'Demand Tracking', value: 80 },
+        { name: 'Customer Satisfaction', value: 85 }
+    ];
+    res.render('index', { kpiData });
+});
+
+module.exports = router;
+ 
+ // Pass the kpiData to the D3 script
+ 
+// routes/index.js
+const express = require('express');
+const router = express.Router();
+
+// Sample KPI data
+router.get('/kpi-data', (req, res) => {
+    const kpiData = [
+        { name: 'Artisan Performance', value: 75 },
+        { name: 'Service Quality', value: 88 },
+        { name: 'Platform Efficiency', value: 92 },
+        { name: 'Demand Tracking', value: 80 },
+        { name: 'Customer Satisfaction', value: 85 }
+    ];
+    res.json(kpiData);
+});
+
+module.exports = router;
+ 
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/kpi-data')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data received:", data); // Check data in console
+
+            const svgWidth = 600, svgHeight = 400;
+            const barPadding = 10;
+            const barWidth = (svgWidth / data.length) - barPadding;
+
+            const svg = d3.select("#kpi-dashboard")
+                .append("svg")
+                .attr("width", svgWidth)
+                .attr("height", svgHeight);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, 100])
+                .range([svgHeight, 0]);
+
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.name))
+                .range([0, svgWidth])
+                .padding(0.1);
+
+            const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                .domain([0, 100]);
+
+            svg.selectAll("rect")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("x", d => xScale(d.name))
+                .attr("y", d => yScale(d.value))
+                .attr("width", barWidth)
+                .attr("height", d => svgHeight - yScale(d.value))
+                .attr("fill", d => colorScale(d.value));
+
+            svg.selectAll("text.value")
+                .data(data)
+                .enter()
+                .append("text")
+                .classed("value", true)
+                .attr("x", d => xScale(d.name) + barWidth / 2)
+                .attr("y", d => yScale(d.value) - 5)
+                .attr("text-anchor", "middle")
+                .text(d => d.value)
+                .attr("fill", "#333");
+
+            svg.append("g")
+                .attr("transform", `translate(0,${svgHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .call(d3.axisLeft(yScale));
+        })
+        .catch(error => console.error("Error fetching data:", error)); // Catch any data fetching errors
+});
+ 
+
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/kpi-data')
+        .then(response => response.json())
+        .then(data => {
+            const svgWidth = 600, svgHeight = 400;
+            const barPadding = 10;
+            const barWidth = (svgWidth / data.length) - barPadding;
+
+            // Create SVG container
+            const svg = d3.select("#kpi-dashboard")
+                .append("svg")
+                .attr("width", svgWidth)
+                .attr("height", svgHeight);
+
+            // Set up scales
+            const yScale = d3.scaleLinear()
+                .domain([0, 100])
+                .range([svgHeight, 0]);
+
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.name))
+                .range([0, svgWidth])
+                .padding(0.1);
+
+            // Define color scale
+            const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                .domain([0, 100]);
+
+            // Add bars
+            svg.selectAll("rect")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("x", d => xScale(d.name))
+                .attr("y", d => yScale(d.value))
+                .attr("width", barWidth)
+                .attr("height", d => svgHeight - yScale(d.value))
+                .attr("fill", d => colorScale(d.value));
+
+            // Add value labels on top of each bar
+            svg.selectAll("text.value")
+                .data(data)
+                .enter()
+                .append("text")
+                .classed("value", true)
+                .attr("x", d => xScale(d.name) + barWidth / 2)
+                .attr("y", d => yScale(d.value) - 5)
+                .attr("text-anchor", "middle")
+                .text(d => d.value)
+                .attr("fill", "#333");
+
+            // Add x-axis
+            svg.append("g")
+                .attr("transform", `translate(0,${svgHeight})`)
+                .call(d3.axisBottom(xScale));
+
+            // Add y-axis
+            svg.append("g")
+                .call(d3.axisLeft(yScale));
+        });
+});
+ 
+ <script src="https://d3js.org/d3.v7.min.js"></script>
+ 
+/* public/css/style.css */
+ 
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#kpi-dashboard {
+    margin: 20px;
+}
+
+svg text {
+    font-size: 12px;
+}
+ 
+// public/js/main.js
+ 
+// public/js/main.js
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/kpi-data')
+        .then(response => response.json())
+        .then(data => {
+            const svgWidth = 600, svgHeight = 400;
+            const barPadding = 5;
+            const barWidth = (svgWidth / data.length);
+
+            const svg = d3.select("#kpi-dashboard")
+                .append("svg")
+                .attr("width", svgWidth)
+                .attr("height", svgHeight);
+
+            svg.selectAll("rect")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("y", d => svgHeight - d.value * 4)
+                .attr("height", d => d.value * 4)
+                .attr("width", barWidth - barPadding)
+                .attr("transform", (d, i) => `translate(${[i * barWidth, 0]})`)
+                .attr("fill", "teal");
+
+            svg.selectAll("text")
+                .data(data)
+                .enter()
+                .append("text")
+                .text(d => `${d.name}: ${d.value}`)
+                .attr("y", d => svgHeight - d.value * 4 - 10)
+                .attr("x", (d, i) => i * barWidth + (barWidth - barPadding) / 2)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#fff");
+        });
+});
+ 
+    # Coursera's AI-Powered Recommendation Engine: Revolutionizing Virtual Tutoring
+
+#
+
+### 4.
+ 
+# Defense of Topic: AI-Driven Personalization in Online Learning Platforms
+
+### 1. Introduction
+
+In the rapidly evolving landscape of online education, AI-driven personalization has emerged as a game-changing technology. This report defends the thesis that Coursera's AI-powered recommendation engine represents a significant advancement in virtual tutoring, addressing critical challenges in online education such as engagement, relevance, and personalization.
+
+Coursera's recommendation engine leverages advanced machine learning algorithms to analyze vast amounts of data, including user behavior, course content, and learning outcomes. This system forms the backbone of Coursera's ability to deliver personalized learning experiences at scale, making it an exemplar of AI application in education technology.
+
+### 2. Overview of Coursera's Recommendation Engine
+
+Coursera's AI-powered recommendation engine is a sophisticated system that forms the core of its personalization strategy. Key aspects include:
+
+- **Data-Driven Insights**: Analyzes millions of data points from user interactions, course content, and learning outcomes.
+- **Real-Time Personalization**: Provides dynamic, up-to-date course and content recommendations.
+- **Multi-Faceted Approach**: Considers user goals, behavior, and global trends in generating recommendations.
+- **Continuous Learning**: The system evolves and improves its recommendations based on user feedback and outcomes.
+
+### 3. Core Features of the AI Recommendation Engine
+
+1. **Personalized Course Suggestions**: Tailors recommendations based on user profiles, learning history, and career goals.
+2. **Adaptive Learning Paths**: Adjusts course difficulty and suggests complementary content based on user performance.
+3. **Skill Gap Analysis**: Identifies and recommends courses to bridge skill gaps for career advancement.
+4. **Content Relevance Scoring**: Rates course content based on user engagement and outcomes to refine suggestions.
+5. **Real-time Adaptation**: Continuously updates recommendations as users interact with the platform.
+ 
+### 
+ 
+   # Coursera's AI-Powered Recommendation Engine: Revolutionizing Virtual Tutoring
+ 
+# Defense of Topic: AI-Driven Personalization in Online Learning Platforms
+
+### 1. Introduction
+
+In the rapidly evolving landscape of online education, AI-driven personalization has emerged as a game-changing technology. This report defends the thesis that Coursera's AI-powered recommendation engine represents a significant advancement in virtual tutoring, addressing critical challenges in online education such as engagement, relevance, and personalization.
+
+Coursera's recommendation engine leverages advanced machine learning algorithms to analyze vast amounts of data, including user behavior, course content, and learning outcomes. This system forms the backbone of Coursera's ability to deliver personalized learning experiences at scale, making it an exemplar of AI application in education technology.
+
+### 2. Overview of Coursera's Recommendation Engine
+
+Coursera's AI-powered recommendation engine is a sophisticated system that forms the core of its personalization strategy. Key aspects include:
+
+- **Data-Driven Insights**: Analyzes millions of data points from user interactions, course content, and learning outcomes.
+- **Real-Time Personalization**: Provides dynamic, up-to-date course and content recommendations.
+- **Multi-Faceted Approach**: Considers user goals, behavior, and global trends in generating recommendations.
+- **Continuous Learning**: The system evolves and improves its recommendations based on user feedback and outcomes.
+
+### 3. Core Features of the AI Recommendation Engine
+
+1. **Personalized Course Suggestions**: Tailors recommendations based on user profiles, learning history, and career goals.
+2. **Adaptive Learning Paths**: Adjusts course difficulty and suggests complementary content based on user performance.
+3. **Skill Gap Analysis**: Identifies and recommends courses to bridge skill gaps for career advancement.
+4. **Content Relevance Scoring**: Rates course content based on user engagement and outcomes to refine suggestions.
+5. **Real-time Adaptation**: Continuously updates recommendations as users interact with the platform.
+ 
+ //ODODAH CHIMDUGAM DAVID IS MY BEST FRIEND EVER!!!!
+            // I KNOW HE IS A REAL ONE FR!... I AM EVER GRATEFUL TO HIM
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $(document).ready(function() {
+            // When the country dropdown changes
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    // Filter states based on selected country code
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates);
+
+                    // Populate the state dropdown with state_code as the value
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.state_code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            // When the state dropdown changes
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                console.log('Selected State Code:', selectedStateCode);
+
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedStateCode) {
+                    // Filter cities based on selected state code
+                    const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+                    console.log('Filtered Cities:', filteredCities);
+
+                    // Populate the city dropdown
+                    $.each(filteredCities, function(index, city) {
+                        $('#cityDropdown').append(`<option value="${city.id}">${city.name}</option>`);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+Nigeria
+ 
+Lagos
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $(document).ready(function() {
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates);
+
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                console.log('Selected State Code:', selectedStateCode); // Debugging log for state code
+            
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+            
+                if (selectedStateCode) {
+                    // Filter cities based on the selected state code
+                    const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+                    console.log('Filtered Cities:', filteredCities); // Debugging log for cities
+            
+                    // Populate the city dropdown
+                    $.each(filteredCities, function(index, city) {
+                        $('#cityDropdown').append(`<option value="${city.id}">${city.name}</option>`);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+$('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedStateCode) {
+                    const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+                    
+                    $.each(filteredCities, function(index, city) {
+                        $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                    });
+                }
+            });
+ 
+
+                        } else {
+                            console.log('No state selected');
+                        }
+                    });
+                });
+ 
+    }
+                    });
+                
+                    $('#stateDropdown').change(function() {
+                        const selectedStateCode = $(this).val();
+                        console.log('Selected State Code:', selectedStateCode);
+                        $('#cityDropdown').html('<option value="">Select City</option>');
+                
+                        if (selectedStateCode) {
+                            const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+                            console.log('Filtered Cities:', filteredCities);
+                
+                            if (filteredCities.length > 0) {
+                                $.each(filteredCities, function(index, city) {
+                                    $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                                });
+                            } else {
+                                console.log('No cities found for the selected state');
+                                $('#cityDropdown').append('<option value="">No cities available</option>');
+                            }
+ 
+ $(document).ready(function() {
+                    console.log('Countries:', countries);
+                    console.log('States:', states);
+                    console.log('Cities:', cities);
+                
+                    $('#countryDropdown').change(function() {
+                        const selectedCountryCode = $(this).val();
+                        console.log('Selected Country Code:', selectedCountryCode);
+                
+                        $('#stateDropdown').html('<option value="">Select State</option>');
+                        $('#cityDropdown').html('<option value="">Select City</option>');
+                
+                        if (selectedCountryCode) {
+                            const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                            console.log('Filtered States:', filteredStates);
+                
+                            $.each(filteredStates, function(index, state) {
+                                $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                            });
+                        } else {
+                            console.log('No country selected')
+ 
+  s.filter(city => city.state_code === selectedStateCode);
+                    
+                    $.each(filteredCities, function(index, city) {
+                        $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                    });
+                }
+            });
+        });
+    </script>
+ 
+   $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedStateCode) {
+                    const filteredCities = citie
+ 
+ <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $(document).ready(function() {
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates);
+
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $(document).ready(function() {
+            
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val(); 
+                console.log('Selected Country Code:', selectedCountryCode); 
+
+               
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates); 
+
+                    
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>'); 
+
+                if (selectedStateCode) {
+                   
+                    $.get(`/cities?stateCode=${selectedStateCode}`, function(data) {
+                        
+                        $.each(data, function(index, city) {
+                            $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                        });
+                    }).fail(function() {
+                        console.error('Error fetching cities'); 
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+// Reset city dropdown
+ 
+// Log error if fetching fails
+ 
+// Populate the city dropdown with fetched cities
+ 
+ // Fetch cities based on selected state
+ 
+// When the state dropdown changes
+ 
+// Populate the state dropdown
+ 
+// Log filtered states
+ 
+    // Filter states based on selected country
+ 
+ // Reset the state and city dropdowns
+ 
+// Get the selected value
+ 
+// Log the selected value
+ 
+// When the country dropdown changes
+ 
+// Pass the countries, states, and cities data to JavaScript
+ 
+-- City Dropdown -->
+ 
+<!-- State Dropdown -->
+ 
+<!-- Country Dropdown -->
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        // Pass the countries, states, and cities data to JavaScript
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $(document).ready(function() {
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val(); // Get the selected value
+                console.log('Selected Country Code:', selectedCountryCode); // Log the selected value
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedCountryCode) {
+                    // Filter states based on selected country
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates); // Log filtered states
+
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedStateCode) {
+                    // Fetch cities based on selected state
+                    $.get(`/cities?stateCode=${selectedStateCode}`, function(data) {
+                        $.each(data,                        // Populate the city dropdown with fetched cities
+                        $.each(data, function(index, city) {
+                            $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        $(document).ready(function() {
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val(); // Get the selected value
+                console.log('Selected Country Code:', selectedCountryCode); // Log the selected value
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedCountryCode) {
+                    // Logic to filter states based on the selected country code
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates); // Log filtered states
+
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedStateCode) {
+                    // Fetch cities based on selected state
+                    $.get(`/cities?stateCode=${selectedStateCode}`, function(data) {
+                        $.each(data, function(index, city) {
+                            $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>; // Pass countries data
+        const states = <%- JSON.stringify(states) %>;     // Pass states data
+        const cities = <%- JSON.stringify(cities) %>;     // Pass cities data
+
+        $(document).ready(function() {
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val(); // Get the selected value
+                console.log('Selected Country Code:', selectedCountryCode); // Log the selected value
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedCountryCode) {
+                    // Filter states based on selected country
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates); // Log filtered states
+
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedStateCode) {
+                    // Fetch cities based on selected state
+                    $.get(`/cities?stateCode=${selectedStateCode}`, function(data) {
+                        $.each(data, function(index, city) {
+                            $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>; // Pass countries data
+        const states = <%- JSON.stringify(states) %>;     // Pass states data
+        const cities = <%- JSON.stringify(cities) %>;     // Pass cities data
+
+        $(document).ready(function() {
+            $('#countryDropdown').change(function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode); // Debug log
+
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedCountryCode) {
+                    // Filter states based on selected country
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates); // Debug log
+
+                    $.each(filteredStates, function(index, state) {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').change(function() {
+                const selectedStateCode = $(this).val();
+                $('#cityDropdown').html('<option value="">Select City</option>'); // Reset city dropdown
+
+                if (selectedStateCode) {
+                    // Fetch cities based on selected state
+                    $.get(`/cities?stateCode=${selectedStateCode}`, function(data) {
+                        $.each(data, function(index, city) {
+                            $('#cityDropdown').append(`<option value="${city.code}">${city.name}</option>`);
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+// Fetch cities based on selected state
+ 
+// Populate the city dropdown
+ 
+ // When a state is selected
+ 
+ // Filter states based on selected country
+ 
+// Reset city dropdown
+ 
+ // When a country is selected
+ 
+ <!-- City Dropdown -->
+ 
+ <!-- State Dropdown -->
+ 
+<!-- Country Dropdown -->
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        // Data arrays available from the server-side
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        // Get references to the dropdown elements
+        const countryDropdown = document.getElementById('countryDropdown');
+        const stateDropdown = document.getElementById('stateDropdown');
+        const cityDropdown = document.getElementById('cityDropdown');
+
+        // Event listener for country dropdown change
+        countryDropdown.addEventListener('change', () => {
+            const selectedCountryCode = countryDropdown.value;
+
+            // Clear and populate state dropdown based on selected country
+            stateDropdown.innerHTML = '<option value="">Select State</option>';
+            const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+            filteredStates.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state.code;
+                option.textContent = state.name;
+                stateDropdown.appendChild(option);
+            });
+
+            // Reset the city dropdown
+            cityDropdown.innerHTML = '<option value="">Select City</option>';
+        });
+
+        // Event listener for state dropdown change
+        stateDropdown.addEventListener('change', () => {
+            const selectedStateCode = stateDropdown.value;
+
+            // Clear and populate city dropdown based on selected state
+            cityDropdown.innerHTML = '<option value="">Select City</option>';
+            const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+            filteredCities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.code;
+                option.textContent = city.name;
+                cityDropdown.appendChild(option);
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <!-- State Dropdown -->
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown" disabled>
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown -->
+    <label for="cityDropdown">City:</label>
+    <select id="cityDropdown" disabled>
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        // Data arrays available from the server-side
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        // Get references to the dropdown elements
+        const countryDropdown = document.getElementById('countryDropdown');
+        const stateDropdown = document.getElementById('stateDropdown');
+        const cityDropdown = document.getElementById('cityDropdown');
+
+        // Event listener for country dropdown change
+        countryDropdown.addEventListener('change', () => {
+            const selectedCountryCode = countryDropdown.value;
+            stateDropdown.innerHTML = '<option value="">Select State</option>';
+            cityDropdown.innerHTML = '<option value="">Select City</option>';
+            cityDropdown.disabled = true;
+
+            if (selectedCountryCode) {
+                // Filter states based on selected country code
+                const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+
+                // Populate the state dropdown
+                filteredStates.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state.code;
+                    option.textContent = state.name;
+                    stateDropdown.appendChild(option);
+                });
+
+                // Enable state dropdown if states are found
+                stateDropdown.disabled = filteredStates.length === 0;
+            } else {
+                // Disable state dropdown if no country selected
+                stateDropdown.disabled = true;
+            }
+        });
+
+        // Event listener for state dropdown change
+        stateDropdown.addEventListener('change', () => {
+            const selectedStateCode = stateDropdown.value;
+            cityDropdown.innerHTML = '<option value="">Select City</option>';
+
+            if (selectedStateCode) {
+                // Filter cities based on selected state code
+                const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+
+                // Populate the city dropdown
+                filteredCities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.code;
+                    option.textContent = city.name;
+                    cityDropdown.appendChild(option);
+                });
+
+                // Enable city dropdown if cities are found
+                cityDropdown.disabled = filteredCities.length === 0;
+            } else {
+                // Disable city dropdown if no state selected
+                cityDropdown.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <!-- Dynamically generated country options -->
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <!-- Dynamically populated states -->
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        // Data passed from the server-side
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log('DOM ready');
+            console.log('Countries:', countries);
+
+            // Event listener for country dropdown change
+            $('#countryDropdown').on('change', function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+                
+                // Reset state and city dropdowns
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    // Filter states based on the selected country code
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    console.log('Filtered States:', filteredStates);
+
+                    // Populate the state dropdown
+                    filteredStates.forEach(state => {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+
+                    // Enable the state dropdown if states are available
+                    $('#stateDropdown').prop('disabled', filteredStates.length === 0);
+                } else {
+                    console.error('No country selected');
+                }
+            });
+
+            // Event listener for state dropdown change
+            $('#stateDropdown').on('change', function() {
+                const selectedStateCode = $(this).val();
+                console.log('Selected State Code:', selectedStateCode);
+
+                // Reset city dropdown
+                $('#city').html('<option value="">Select City</option>');
+
+                if (selectedStateCode) {
+                    // Filter cities based on the selected state code
+                    const filteredCities = cities.filter(city => city.state_code === selectedStateCode);
+                    console.log('Filtered Cities:', filteredCities);
+
+                    // Populate the city dropdown
+                    filteredCities.forEach(city => {
+                        $('#city').append(`<option value="${city.code}">${city.name}</option>`);
+                    });
+                } else {
+                    console.error('No state selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <option value="">Select Countries</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown">
+        <!-- States will be dynamically populated -->
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log('DOM ready');
+            
+            $('#countryDropdown').on('change', function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+                
+                // Clear and enable the state dropdown
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    
+                    // Populate state dropdown
+                    filteredStates.forEach(state => {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+
+                    // Enable the state dropdown
+                    $('#stateDropdown').prop('disabled', false);
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').on('change', function() {
+                const stateCode = $(this).val();
+                $('#city').html('<option value="">Select City</option>');
+                
+                if (stateCode) {
+                    const filteredCities = cities.filter(city => city.state_code === stateCode);
+                    
+                    // Populate city dropdown
+                    filteredCities.forEach(city => {
+                        $('#city').append(`<option value="${city.code}">${city.name}</option>`);
+                    });
+                } else {
+                    console.log('No state selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="countryDropdown">Country:</label>
+    <select id="countryDropdown">
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <label for="stateDropdown">State:</label>
+    <select id="stateDropdown" disabled>
+        <!-- States will be populated dynamically -->
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log('DOM ready');
+            
+            $('#countryDropdown').on('change', function() {
+                const selectedCountryCode = $(this).val();
+                console.log('Selected Country Code:', selectedCountryCode);
+                
+                $('#stateDropdown').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+
+                if (selectedCountryCode) {
+                    const filteredStates = states.filter(state => state.country_code === selectedCountryCode);
+                    
+                    filteredStates.forEach(state => {
+                        $('#stateDropdown').append(`<option value="${state.code}">${state.name}</option>`);
+                    });
+                    $('#stateDropdown').prop('disabled', filteredStates.length === 0);
+                } else {
+                    console.log('No country selected');
+                }
+            });
+
+            $('#stateDropdown').on('change', function() {
+                const stateCode = $(this).val();
+                $('#city').html('<option value="">Select City</option>');
+                
+                if (stateCode) {
+                    const filteredCities = cities.filter(city => city.state_code === stateCode);
+                    
+                    filteredCities.forEach(city => {
+                        $('#city').append(`<option value="${city.code}">${city.name}</option>`);
+                    });
+                } else {
+                    console.log('No state selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="country">Country:</label>
+    <select id="countryDropdown">
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+    
+
+    <label for="state">State:</label>
+    <select id="stateDropdown" disabled>
+       
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log('DOM ready');
+            
+            console.log('Total countries:', countries.length);
+            console.log('Sample country:', countries[0]);
+            console.log('Total states:', states.length);
+            console.log('Total cities:', cities.length);
+            console.log(states);
+            
+            // Log the HTML of the country dropdown
+            console.log('Country dropdown HTML:', $('#country').html());
+            
+            $('#country').on('change', function() {
+                console.log('Country dropdown changed');
+                const countryCode = $(this).val();
+                console.log('Selected Country Code:', countryCode);
+                console.log('Selected Country Element:', this);
+                console.log('Selected Option:', $(this).find('option:selected'));
+                
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+                
+                if (countryCode) {
+                    const selectedCountry = countries.find(c => c.country_code === countryCode);
+                    console.log('Selected Country Object:', selectedCountry);
+                    
+                    const filteredStates = states.filter(state => state.country_code === countryCode);
+                    console.log('Filtered States:', filteredStates.length);
+                    
+                    if (filteredStates.length > 0) {
+                        filteredStates.forEach(state => {
+                            $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                        });
+                    } else {
+                        console.log('No states found for the selected country');
+                    }
+                } else {
+                    console.log('No country selected (empty country code)');
+                }
+            });
+    
+            $('#state').on('change', function() {
+                const stateId = $(this).val();
+                console.log('Selected State ID:', stateId);
+    
+                $('#city').html('<option value="">Select City</option>');
+    
+                if (stateId) {
+                    const filteredCities = cities.filter(city => city.state_id == stateId);
+                    console.log('Filtered Cities:', filteredCities.length);
+    
+                    if (filteredCities.length > 0) {
+                        filteredCities.forEach(city => {
+                            $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                        });
+                    } else {
+                        console.log('No cities found for the selected state');
+                    }
+                } else {
+                    console.log('No state selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+ <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }) %>
+    </select>
+ 
+ <% states.forEach(state => { %>
+            <option value="<%= state.code %>"><%= state.name %></option>
+        <% }); %>
+ 
+ <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }) %>
+    </select>
+
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+   
+    <script>a
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log('Total countries:', countries.length);
+            console.log('Sample country:', countries[0]);
+            console.log('Total states:', states.length);
+            console.log('Total cities:', cities.length);
+    
+            // Log the HTML of the country dropdown
+            console.log('Country dropdown HTML:', $('#country').html());
+    
+          
+            $('#country').on('change', function() {
+                const countryCode = $(this).val();
+                console.log('Selected Country Code:', countryCode);
+            
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+            
+                if (countryCode) {
+                    const selectedCountry = countries.find(c => c.country_code === countryCode);
+                    console.log('Selected Country:', selectedCountry);
+            
+                    const filteredStates = states.filter(state => state.country_code === countryCode);
+                    console.log('Filtered States:', filteredStates.length);
+            
+                    if (filteredStates.length > 0) {
+                        filteredStates.forEach(state => {
+                            $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                        });
+                    } else {
+                        console.log('No states found for the selected country');
+                    }
+                } else {
+                    console.log('No country selected');
+                }
+            });
+    
+            $('#state').on('change', function() {
+                const stateId = $(this).val();
+                console.log('Selected State ID:', stateId);
+    
+                $('#city').html('<option value="">Select City</option>');
+    
+                if (stateId) {
+                    const filteredCities = cities.filter(city => city.state_id == stateId);
+                    console.log('Filtered Cities:', filteredCities.length);
+    
+                    if (filteredCities.length > 0) {
+                        filteredCities.forEach(city => {
+                            $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                        });
+                    } else {
+                        console.log('No cities found for the selected state');
+                    }
+                } else {
+                    console.log('No state selected');
+                }
+            });
+        });
+    </script>
+        
+</body>
+</html>
+ 
+ });
+ 
+  $('#country').on('change', function() {
+                alert('Country changed!');
+                const countryCode = $(this).val();
+                console.log('Selected Country Code:', countryCode);
+    
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+    
+                if (countryCode) {
+                    const selectedCountry = countries.find(c => c.country_code === countryCode);
+                    console.log('Selected Country:', selectedCountry);
+    
+                    const filteredStates = states.filter(state => state.country_code === countryCode);
+                    console.log('Filtered States:', filteredStates.length);
+    
+                    if (filteredStates.length > 0) {
+                        filteredStates.forEach(state => {
+                            $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                        });
+                    } else {
+                        console.log('No states found for the selected country');
+                    }
+                } else {
+                    console.log('No country selected');
+                }
+ 
+  <script>
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log('Total states:', states.length);
+          ole.log('No cities found for the selected state');
+                    }
+                } else {
+                    console.log('No state selected');
+                }
+            });
+        });
+    </script>
+ 
+  console.log('Total cities:', cities.length);
+    
+            $('#country').on('change', function() {
+                const countryCode = $(this).val();
+                console.log('Selected Country Code:', countryCode);
+    
+       
+    
+            $('#state').on('change', function() {
+                const stateId = $(this).val();
+                console.log('Selected State ID:', stateId);
+    
+                $('#city').html('<option value="">Select City</option>');
+    
+                if (stateId) {
+                    const filteredCities = cities.filter(city => city.state_id == stateId);
+                    console.log('Filtered Cities:', filteredCities.length);
+    
+                    if (filteredCities.length > 0) {
+                        filteredCities.forEach(city => {
+                            $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                        });
+                    } else {
+                        cons
+ 
+         $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+    
+                if (countryCode) {
+                    const filteredStates = states.filter(state => state.country_code === countryCode);
+                    console.log('Filtered States:', filteredStates.length);
+    
+                    if (filteredStates.length > 0) {
+                        filteredStates.forEach(state => {
+                            $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                        });
+                    } else {
+                        console.log('No states found for the selected country');
+                    }
+                } else {
+                    console.log('No country selected');
+                }
+            });
+ 
+<select id="state" name="state">
+        <option value="">Select State</option>
+ 
+<select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }) %>
+    </select>
+ 
+<label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }) %>
+    </select>
+ 
+        console.log('Filtered Cities:', filteredCities);  
+    
+                filteredCities.forEach(city => {
+                    $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                });
+            });
+        });
+    </script>
+ 
+     const filteredStates = states.filter(state => state.country_code === countryCode);
+                console.log('Filtered States:', filteredStates);  
+    
+                filteredStates.forEach(state => {
+                    $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                });
+            });
+    
+            $('#state').on('change', function() {
+                const stateId = $(this).val();  
+                console.log('Selected State ID:', stateId);  
+    
+                $('#city').html('<option value="">Select City</option>');
+    
+                const filteredCities = c
+ 
+ <script>
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        $(document).ready(function() {
+            console.log(states); 
+            console.log(cities);  
+    
+            $('#country').on('change', function() {
+                const countryCode = $(this).val();  
+                console.log('Selected Country Code:', countryCode);
+    
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+    
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+   
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }) %>
+    </select>
+
+  
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= state.country_code %>"><%= state.name %></option>
+        <% }) %>
+    </select>
+
+   
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= city.state_code %>"><%= city.name %></option>
+        <% }) %>
+    </select>
+
+    <script>
+        
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        
+        $(document).ready(function() {
+            console.log(states); 
+            console.log(cities);  
+    
+           
+            $('#country').on('change', function() {
+                const countryCode = $(this).val();  
+                console.log('Selected Country Code:', countryCode);
+    
+                
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+    
+                
+                const filteredStates = states.filter(state => state.country_code === countryCode);
+                console.log('Filtered States:', filteredStates);  
+    
+               
+                filteredStates.forEach(state => {
+                    $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                });
+            });
+    
+           
+            $('#state').on('change', function() {
+                const stateId = $(this).val();  
+                console.log('Selected State ID:', stateId);  
+    
+                
+                $('#city').html('<option value="">Select City</option>');
+    
+               
+                const filteredCities = cities.filter(city => city.state_id == stateId);
+                console.log('Filtered Cities:', filteredCities);  
+    
+                
+                filteredCities.forEach(city => {
+                    $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropdown Example</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+    
+    <label for="country">Country:</label>
+    <select id="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.code %>"><%= country.name %></option>
+        <% }); %>
+    </select>
+
+    <label for="state">State:</label>
+    <select id="state" disabled>
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" disabled>
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        $('#country').on('change', function() {
+            const countryCode = $(this).val();
+            $('#state').empty().append('<option value="">Select State</option>').prop('disabled', true);
+            $('#city').empty().append('<option value="">Select City</option>').prop('disabled', true);
+
+            if (countryCode) {
+                const filteredStates = states.filter(state => state.country_code === countryCode);
+                filteredStates.forEach(state => {
+                    $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                });
+                $('#state').prop('disabled', false);
+            }
+        });
+
+        $('#state').on('change', function() {
+            const stateId = $(this).val();
+            $('#city').empty().append('<option value="">Select City</option>').prop('disabled', true);
+
+            if (stateId) {
+                const filteredCities = cities.filter(city => city.state_id === stateId);
+                filteredCities.forEach(city => {
+                    $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                });
+                $('#city').prop('disabled', false);
+            }
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+   
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.name %></option>
+        <% }) %>
+    </select>
+
+  
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+   
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        
+        $(document).ready(function() {
+            console.log(states); 
+            console.log(cities);  
+    
+           
+            $('#country').on('change', function() {
+                const countryCode = $(this).val();  
+                console.log('Selected Country Code:', countryCode);
+    
+                
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+    
+                
+                const filteredStates = states.filter(state => state.country_code === countryCode);
+                console.log('Filtered States:', filteredStates);  
+    
+               
+                filteredStates.forEach(state => {
+                    $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                });
+            });
+    
+           
+            $('#state').on('change', function() {
+                const stateId = $(this).val();  
+                console.log('Selected State ID:', stateId);  
+    
+                
+                $('#city').html('<option value="">Select City</option>');
+    
+               
+                const filteredCities = cities.filter(city => city.state_id == stateId);
+                console.log('Filtered Cities:', filteredCities);  
+    
+                
+                filteredCities.forEach(city => {
+                    $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+// Get selected state ID
+ 
+// Debug log for selected state ID
+ 
+// JSON data for states and cities
+ 
+/ When the page loads, set up the dropdowns
+ 
+// Log the cities array to the console
+ 
+ // Log the states array to the console
+ 
+// Get selected country code
+ 
+ // When country is selected, populate the states dropdown
+ 
+// Reset state and city dropdowns
+ 
+// Filter states by selected country
+ 
+ // Populate state dropdown with filtered states
+ 
+// Debug log for filtered states
+ 
+ // When state is selected, update city dropdown
+ 
+// Reset city dropdown
+ 
+ // Filter cities by selected state
+ 
+// Debug log for filtered cities
+ 
+/ Populate city dropdown with filtered cities
+ 
+<script>
+        // JSON data for states and cities
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+    
+        // When the page loads, set up the dropdowns
+        $(document).ready(function() {
+
+            console.log(states);  // Check that states data is loaded correctly
+            console.log(cities);  // Check that cities data is loaded correctly
+
+            // Initialize country dropdown (this is likely already working)
+            $('#country').on('change', function() {
+                const countryCode = $(this).val();  // Get selected country code
+    
+                // Reset state and city dropdowns
+                $('#state').html('<option value="">Select State</option>');
+                $('#city').html('<option value="">Select City</option>');
+    
+                // Filter states by selected country
+                const filteredStates = states.filter(state => state.country_code === countryCode);
+    
+                // Populate state dropdown with filtered states
+                filteredStates.forEach(state => {
+                    $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+                });
+            });
+    
+            // When state is selected, update city dropdown
+            $('#state').on('change', function() {
+                const stateId = $(this).val();  // Get selected state ID
+    
+                // Reset city dropdown
+                $('#city').html('<option value="">Select City</option>');
+    
+                // Filter cities by selected state
+                const filteredCities = cities.filter(city => city.state_id == stateId);
+    
+                // Populate city dropdown with filtered cities
+                filteredCities.forEach(city => {
+                    $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+                });
+            });
+        });
+    </script>
+ 
+ const states = <%= JSON.stringify(states) %>;
+        const cities = <%= JSON.stringify(cities) %>;
+ 
+<script>
+        const states = <%= JSON.stringify(states) %>;
+        const cities = <%= JSON.stringify(cities) %>;
+    
+        // When country is selected, populate the states dropdown
+        $('#country').on('change', function() {
+            const countryCode = $(this).val();  // Get selected country code
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+    
+            // Clear the state dropdown and add new options
+            $('#state').html('<option value="">Select State</option>');
+            filteredStates.forEach(state => {
+                $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+            });
+    
+            // Clear the city dropdown since state has changed
+            $('#city').html('<option value="">Select City</option>');
+        });
+    
+        // When state is selected, populate the cities dropdown
+        $('#state').on('change', function() {
+            const stateId = $(this).val();  // Get selected state ID
+            const filteredCities = cities.filter(city => city.state_id == stateId);
+    
+            // Clear the city dropdown and add new options
+            $('#city').html('<option value="">Select City</option>');
+            filteredCities.forEach(city => {
+                $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+            });
+        });
+    </script>
+ 
+exports.getStates = (req, res) => {
+    const countryCode = req.query.countryCode;
+    const filteredStates = states.filter(state => state.country_code === countryCode);
+    res.json(filteredStates);
+  };
+ 
+let
+ 
+ ity => city.state_id == stateId);
+    
+            // Clear the city dropdown and add new options
+            $('#city').html('<option value="">Select City</option>');
+            filteredCities.forEach(city => {
+                $('#city').append(`<option value="${city.id}">${city.name}</option>`);
+            });
+        });
+    </script>
+ 
+<script>
+        const states = <%= JSON.stringify(states) %>;
+        const cities = <%= JSON.stringify(cities) %>;
+    
+        // When country is selected, populate the states dropdown
+        $('#country').on('change', function() {
+            const countryCode = $(this).val();  // Get selected country code
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+    
+            // Clear the state dropdown and add new options
+            $('#state').html('<option value="">Select State</option>');
+            filteredStates.forEach(state => {
+                $('#state').append(`<option value="${state.id}">${state.name}</option>`);
+            });
+    
+            // Clear the city dropdown since state has changed
+            $('#city').html('<option value="">Select City</option>');
+        });
+    
+        // When state is selected, populate the cities dropdown
+        $('#state').on('change', function() {
+            const stateId = $(this).val();  // Get selected state ID
+            const filteredCities = cities.filter(c
+ 
+<script
+            const filteredCities = cities.filter(city => city.state_code === stateCode);
+            console.log('Filtered cities:', filteredCities);
+
+            filteredCities.forEach(city => {
+                $('#city').append(`<option value="${city.name}">${city.name}</option>`);
+            });
+        });
+    </script>
+ 
+script>
+        const states = <%= JSON.stringify(states) %>;
+        const cities = <%= JSON.stringify(cities) %>;
+
+        
+        $('#country').change(function() {
+            const countryCode = $(this).val();
+            console.log('Selected country code:', countryCode);
+            $('#state').empty().append('<option value="">Select State</option>');
+
+            // Filter states based on selected country
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            console.log('Filtered states:', filteredStates);
+            
+            filteredStates.forEach(state => {
+                $('#state').append(`<option value="${state.state_code}">${state.name}</option>`);
+            });
+        });
+
+       
+        $('#state').change(function() {
+            const stateCode = $(this).val();
+            console.log('Selected state code:', stateCode);
+            $('#city').empty().append('<option value="">Select City</option>');
+
+          
+ 
+  // Filter cities based on selected state
+ 
+ // Handle state selection to populate cities
+ 
+// Handle country selection to populate states
+ 
+ <!-- City Dropdown (initially empty) -->
+ 
+  <!-- State Dropdown (initially empty) -->
+ 
+ <!-- Country Dropdown -->
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+    </select>
+
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <div id="debug"></div>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        function debug(message) {
+            $('#debug').append(`<p>${message}</p>`);
+            console.log(message);
+        }
+
+        debug(`Countries: ${countries.length}`);
+        debug(`States: ${states.length}`);
+
+        // Populate country dropdown
+        function populateCountries() {
+            const countrySelect = $('#country');
+            countrySelect.empty().append('<option value="">Select Country</option>');
+            if (Array.isArray(countries) && countries.length > 0) {
+                const fragment = document.createDocumentFragment();
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.country_code;
+                    option.textContent = country.country_name;
+                    fragment.appendChild(option);
+                });
+                countrySelect.append(fragment);
+                debug(`Populated ${countries.length} countries`);
+            } else {
+                debug('No countries data available');
+            }
+        }
+
+        // Populate state dropdown based on selected country
+        function populateStates(countryCode) {
+            const stateSelect = $('#state');
+            stateSelect.empty().append('<option value="">Select State</option>');
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            const fragment = document.createDocumentFragment();
+            filteredStates.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state.state_code;
+                option.textContent = state.state_name;
+                fragment.appendChild(option);
+            });
+            stateSelect.append(fragment);
+            debug(`Populated ${filteredStates.length} states for country ${countryCode}`);
+        }
+
+        // Fetch and populate cities based on selected state
+        function fetchCities(stateCode) {
+            $.get(`/getCities?stateCode=${stateCode}`, function(cities) {
+                const citySelect = $('#city');
+                citySelect.empty().append('<option value="">Select City</option>');
+                const fragment = document.createDocumentFragment();
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.city_name;
+                    option.textContent = city.city_name;
+                    fragment.appendChild(option);
+                });
+                citySelect.append(fragment);
+                debug(`Populated ${cities.length} cities for state ${stateCode}`);
+            });
+        }
+
+        // Event listeners
+        $(document).ready(function() {
+            debug('Document ready');
+            populateCountries();
+
+            $('#country').change(function() {
+                const countryCode = $(this).val();
+                debug(`Country selected: ${countryCode}`);
+                if (countryCode) {
+                    populateStates(countryCode);
+                } else {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+
+            $('#state').change(function() {
+                const stateCode = $(this).val();
+                debug(`State selected: ${stateCode}`);
+                if (stateCode) {
+                    fetchCities(stateCode);
+                } else {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+    </select>
+
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <div id="debug"></div>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        function debug(message) {
+            $('#debug').append(`<p>${message}</p>`);
+            console.log(message);
+        }
+
+        debug(`Countries: ${countries.length}`);
+        debug(`States: ${states.length}`);
+        debug(`Cities: ${cities.length}`);
+
+        // Populate country dropdown
+        function populateCountries() {
+            const countrySelect = $('#country');
+            countrySelect.empty().append('<option value="">Select Country</option>');
+            if (Array.isArray(countries) && countries.length > 0) {
+                const fragment = document.createDocumentFragment();
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.country_code;
+                    option.textContent = country.country_name;
+                    fragment.appendChild(option);
+                });
+                countrySelect.append(fragment);
+                debug(`Populated ${countries.length} countries`);
+            } else {
+                debug('No countries data available');
+            }
+        }
+
+        // Populate state dropdown based on selected country
+        function populateStates(countryCode) {
+            const stateSelect = $('#state');
+            stateSelect.empty().append('<option value="">Select State</option>');
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            const fragment = document.createDocumentFragment();
+            filteredStates.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state.state_code;
+                option.textContent = state.state_name;
+                fragment.appendChild(option);
+            });
+            stateSelect.append(fragment);
+            debug(`Populated ${filteredStates.length} states for country ${countryCode}`);
+        }
+
+        // Populate city dropdown based on selected state
+        function populateCities(stateCode) {
+            const citySelect = $('#city');
+            citySelect.empty().append('<option value="">Select City</option>');
+            const filteredCities = cities.filter(city => city.state_code === stateCode);
+            const fragment = document.createDocumentFragment();
+            filteredCities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.city_name;
+                option.textContent = city.city_name;
+                fragment.appendChild(option);
+            });
+            citySelect.append(fragment);
+            debug(`Populated ${filteredCities.length} cities for state ${stateCode}`);
+        }
+
+        // Event listeners
+        $(document).ready(function() {
+            debug('Document ready');
+            populateCountries();
+
+            $('#country').change(function() {
+                const countryCode = $(this).val();
+                debug(`Country selected: ${countryCode}`);
+                if (countryCode) {
+                    populateStates(countryCode);
+                } else {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+
+            $('#state').change(function() {
+                const stateCode = $(this).val();
+                debug(`State selected: ${stateCode}`);
+                if (stateCode) {
+                    populateCities(stateCode);
+                } else {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+const csv = require('csv-parser');
+   const fs = require('fs');
+   const path = require('path');
+
+   let countries = [];
+   let states = [];
+   let cities = [];
+
+   exports.loadData = (callback) => {
+       if (typeof callback !== 'function') {
+           throw new Error('Callback must be a function');
+       }
+
+       let count = 0;
+       const totalCount = 3;
+
+       fs.createReadStream(path.join(__dirname, '../data/countries.csv'))
+           .pipe(csv())
+           .on('data', (row) => countries.push(row))
+           .on('end', () => {
+               count++;
+               console.log(`Loaded ${countries.length} countries`);
+               if (count === totalCount) {
+                   callback();
+               }
+           });
+
+       fs.createReadStream(path.join(__dirname, '../data/states.csv'))
+           .pipe(csv())
+           .on('data', (row) => states.push(row))
+           .on('end', () => {
+               count++;
+               console.log(`Loaded ${states.length} states`);
+               if (count === totalCount) {
+                   callback();
+               }
+           });
+
+       fs.createReadStream(path.join(__dirname, '../data/cities.csv'))
+           .pipe(csv())
+           .on('data', (row) => cities.push(row))
+           .on('end', () => {
+               count++;
+               console.log(`Loaded ${cities.length} cities`);
+               if (count === totalCount) {
+                   callback();
+               }
+           });
+   };
+
+   exports.getData = (req, res) => {
+       exports.loadData(() => {
+           console.log('Rendering dropdown with:', { 
+               countriesCount: countries.length, 
+               statesCount: states.length, 
+               citiesCount: cities.length 
+           });
+           res.render('dropdown', { countries, states, cities });
+       });
+   };
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+    </select>
+
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <div id="debug"></div>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        function debug(message) {
+            $('#debug').append(`<p>${message}</p>`);
+            console.log(message);
+        }
+
+        debug(`Countries: ${JSON.stringify(countries)}`);
+        debug(`States: ${JSON.stringify(states)}`);
+        debug(`Cities: ${JSON.stringify(cities)}`);
+
+        // Populate country dropdown
+        function populateCountries() {
+            const countrySelect = $('#country');
+            countrySelect.empty().append('<option value="">Select Country</option>');
+            if (Array.isArray(countries) && countries.length > 0) {
+                countries.forEach(country => {
+                    countrySelect.append(`<option value="${country.country_code}">${country.country_name}</option>`);
+                });
+                debug(`Populated ${countries.length} countries`);
+            } else {
+                debug('No countries data available');
+            }
+        }
+
+        // Populate state dropdown based on selected country
+        function populateStates(countryCode) {
+            const stateSelect = $('#state');
+            stateSelect.empty().append('<option value="">Select State</option>');
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            filteredStates.forEach(state => {
+                stateSelect.append(`<option value="${state.state_code}">${state.state_name}</option>`);
+            });
+            debug(`Populated ${filteredStates.length} states for country ${countryCode}`);
+        }
+
+        // Populate city dropdown based on selected state
+        function populateCities(stateCode) {
+            const citySelect = $('#city');
+            citySelect.empty().append('<option value="">Select City</option>');
+            const filteredCities = cities.filter(city => city.state_code === stateCode);
+            filteredCities.forEach(city => {
+                citySelect.append(`<option value="${city.city_name}">${city.city_name}</option>`);
+            });
+            debug(`Populated ${filteredCities.length} cities for state ${stateCode}`);
+        }
+
+        // Event listeners
+        $(document).ready(function() {
+            debug('Document ready');
+            populateCountries();
+
+            $('#country').change(function() {
+                const countryCode = $(this).val();
+                debug(`Country selected: ${countryCode}`);
+                if (countryCode) {
+                    populateStates(countryCode);
+                } else {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+
+            $('#state').change(function() {
+                const stateCode = $(this).val();
+                debug(`State selected: ${stateCode}`);
+                if (stateCode) {
+                    populateCities(stateCode);
+                } else {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+    </select>
+
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%- JSON.stringify(countries) %>;
+        const states = <%- JSON.stringify(states) %>;
+        const cities = <%- JSON.stringify(cities) %>;
+
+        console.log('Countries:', countries);
+        console.log('States:', states);
+        console.log('Cities:', cities);
+
+        // Populate country dropdown
+        function populateCountries() {
+            const countrySelect = $('#country');
+            countrySelect.empty().append('<option value="">Select Country</option>');
+            countries.forEach(country => {
+                countrySelect.append(`<option value="${country.country_code}">${country.country_name}</option>`);
+            });
+        }
+
+        // Populate state dropdown based on selected country
+        function populateStates(countryCode) {
+            const stateSelect = $('#state');
+            stateSelect.empty().append('<option value="">Select State</option>');
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            filteredStates.forEach(state => {
+                stateSelect.append(`<option value="${state.state_code}">${state.state_name}</option>`);
+            });
+        }
+
+        // Populate city dropdown based on selected state
+        function populateCities(stateCode) {
+            const citySelect = $('#city');
+            citySelect.empty().append('<option value="">Select City</option>');
+            const filteredCities = cities.filter(city => city.state_code === stateCode);
+            filteredCities.forEach(city => {
+                citySelect.append(`<option value="${city.city_name}">${city.city_name}</option>`);
+            });
+        }
+
+        // Event listeners
+        $(document).ready(function() {
+            populateCountries();
+
+            $('#country').change(function() {
+                const countryCode = $(this).val();
+                if (countryCode) {
+                    populateStates(countryCode);
+                } else {
+                    $('#state').empty().append('<option value="">Select State</option>');
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+
+            $('#state').change(function() {
+                const stateCode = $(this).val();
+                if (stateCode) {
+                    populateCities(stateCode);
+                } else {
+                    $('#city').empty().append('<option value="">Select City</option>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+<!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Select Country, State, and City</title>
+       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   </head>
+   <body>
+       <h1>Select Country, State, and City</h1>
+
+       <p>Debug Info:</p>
+       <ul>
+           <li>Countries: <%= countries.length %></li>
+           <li>States: <%= states.length %></li>
+           <li>Cities: <%= cities.length %></li>
+       </ul>
+
+       <label for="country">Country:</label>
+       <select id="country" name="country">
+           <option value="">Select Country</option>
+           <% countries.forEach(country => { %>
+               <option value="<%= country.country_code %>"><%= country.country_name %></option>
+           <% }) %>
+       </select>
+
+       <label for="state">State:</label>
+       <select id="state" name="state">
+           <option value="">Select State</option>
+       </select>
+
+       <label for="city">City:</label>
+       <select id="city" name="city">
+           <option value="">Select City</option>
+       </select>
+
+       <script>
+           const countries = <%= JSON.stringify(countries) %>;
+           const states = <%= JSON.stringify(states) %>;
+           const cities = <%= JSON.stringify(cities) %>;
+
+           console.log('Countries:', countries);
+           console.log('States:', states);
+           console.log('Cities:', cities);
+
+
+        $('#country').empty().append('<option value="">Select Country</option>');
+        <% countries.forEach(country => { %>
+            $('#country').append(`<option value="${country.country_code}">${country.country_name}</option>`);
+        <% }) %>
+
+      
+        $('#country').change(function() {
+            const countryCode = $(this).val();
+            $('#state').empty().append('<option value="">Select State</option>');
+
+          
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            filteredStates.forEach(state => {
+                $('#state').append(`<option value="${state.state_code}">${state.state_name}</option>`);
+            });
+        });
+
+       
+        $('#state').change(function() {
+            const stateCode = $(this).val();
+            $('#city').empty().append('<option value="">Select City</option>');
+
+          
+            const filteredCities = cities.filter(city => city.state_code === stateCode);
+            filteredCities.forEach(city => {
+                $('#city').append(`<option value="${city.city_name}">${city.city_name}</option>`);
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
+
+let countries = [];
+let states = [];
+let cities = [];
+
+exports.loadData = (callback) => {
+    if (typeof callback !== 'function') {
+        throw new Error('Callback must be a function');
+    }
+
+    let count = 0;
+    const totalCount = 3;
+
+    fs.createReadStream(path.join(__dirname, '../data/countries.csv'))
+        .pipe(csv())
+        .on('data', (row) => countries.push(row))
+        .on('end', () => {
+            count++;
+            if (count === totalCount) {
+                callback();
+            }
+        });
+
+    fs.createReadStream(path.join(__dirname, '../data/states.csv'))
+        .pipe(csv())
+        .on('data', (row) => states.push(row))
+        .on('end', () => {
+            count++;
+            if (count === totalCount) {
+                callback();
+            }
+        });
+
+    fs.createReadStream(path.join(__dirname, '../data/cities.csv'))
+        .pipe(csv())
+        .on('data', (row) => cities.push(row))
+        .on('end', () => {
+            count++;
+            if (count === totalCount) {
+                callback();
+            }
+        });
+};
+
+exports.getData = (req, res) => {
+    exports.loadData(() => {
+        res.render('dropdown', { countries, states, cities });
+    });
+};
+ 
+       // Rest of your JavaScript code...
+       </script>
+   </body>
+   </html>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ 
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+   
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.country_name %></option>
+        <% }) %>
+    </select>
+
+  
+    <label for="state">State:</label>
+    <select id="
+ 
+state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+  
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const countries = <%= JSON.stringify(countries) %>;
+        const states = <%= JSON.stringify(states) %>;
+        const cities = <%= JSON.stringify(cities) %>;
+ 
+dataController.loadData();
+ 
+  // Your code here
+ 
+
+
+
+            }
+        });
+
+    fs.createReadStream(path.join(__dirname, '../data/cities.csv'))
+        .pipe(csv())
+        .on('data', (row) => cities.push(row))
+        .on('end', () => {
+            count++;
+            if (count === totalCount) {
+                callback();
+            }
+        });
+};
+ 
+exports.loadData = (callback) => {
+    let count = 0;
+    const totalCount = 3;
+
+    fs.createReadStream(path.join(__dirname, '../data/countries.csv'))
+        .pipe(csv())
+        .on('data', (row) => countries.push(row))
+        .on('end', () => {
+            count++;
+            if (count === totalCount) {
+                callback();
+            }
+        });
+
+    fs.createReadStream(path.join(__dirname, '../data/states.csv'))
+        .pipe(csv())
+        .on('data', (row) => states.push(row))
+        .on('end', () => {
+            count++;
+            if (count === totalCount) {
+                callback();
+ 
+
+exports.getData = (req, res) => {
+    res.render('dropdown', { countries, states, cities });
+};
+ 
+exports.loadData = () => {
+   
+    fs.createReadStream(path.join(__dirname, '../data/countries.csv'))
+        .pipe(csv())
+        .on('data', (row) => countries.push(row))
+        .on('end', () => {
+            console.log('Countries CSV successfully processed:');
+        });
+
+   
+    fs.createReadStream(path.join(__dirname, '../data/states.csv'))
+        .pipe(csv())
+        .on('data', (row) => states.push(row))
+        .on('end', () => {
+            console.log('States CSV successfully processed:');
+        });
+
+   
+    fs.createReadStream(path.join(__dirname, '../data/cities.csv'))
+        .pipe(csv())
+        .on('data', (row) => cities.push(row))
+        .on('end', () => {
+            console.log('Cities CSV successfully processed:');
+        });
+};
+ 
+// Routes for dropdowns
+ 
+ console.log('Cities CSV successfully processed:', cities);
+ 
+ console.log('States CSV successfully processed:', states);
+ 
+   console.log('Countries CSV successfully processed:', countries);
+ 
+// Use routes
+ 
+// Load CSV data on server startup
+ 
+// Route to display the dropdowns with countries, states, and cities
+ 
+// Route for the root URL to redirect to the dropdown page
+ 
+ // Redirect to the dropdown page
+ 
+  // Filter cities based on selected state
+ 
+ // Handle state selection to populate cities
+ 
+  // Filter states based on selected country
+ 
+  // Handle country selection to populate states
+ 
+  <!-- City Dropdown -->
+ 
+  <!-- State Dropdown -->
+ 
+ <!-- Country Dropdown -->
+ 
+// Function to return the stored data for the dropdowns
+ 
+ // Load cities
+ 
+ // Load states
+ 
+ // Load countries
+ 
+// Load CSV data at server startup
+ 
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
+
+let countries = [];
+let states = [];
+let cities = [];
+
+// Load CSV data at server startup
+exports.loadData = () => {
+    fs.createReadStream(path.join(__dirname, '../data/countries.csv'))
+        .pipe(csv())
+        .on('data', (row) => countries.push(row))
+        .on('end', () => console.log('Countries CSV successfully processed'));
+
+    fs.createReadStream(path.join(__dirname, '../data/states.csv'))
+        .pipe(csv())
+        .on('data', (row) => states.push(row))
+        .on('end', () => console.log('States CSV successfully processed'));
+
+    fs.createReadStream(path.join(__dirname, '../data/cities.csv'))
+        .pipe(csv())
+        .on('data', (row) => cities.push(row))
+        .on('end', () => console.log('Cities CSV successfully processed'));
+};
+
+// Function to return the stored data for the dropdowns
+exports.getData = (req, res) => {
+    res.render('dropdown', { countries, states, cities });
+};
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country, State, and City</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Select Country, State, and City</h1>
+
+    <!-- Country Dropdown -->
+    <label for="country">Country:</label>
+    <select id="country" name="country">
+        <option value="">Select Country</option>
+        <% countries.forEach(country => { %>
+            <option value="<%= country.country_code %>"><%= country.country_name %></option>
+        <% }) %>
+    </select>
+
+    <!-- State Dropdown (initially empty) -->
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="">Select State</option>
+    </select>
+
+    <!-- City Dropdown (initially empty) -->
+    <label for="city">City:</label>
+    <select id="city" name="city">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        const states = <%= JSON.stringify(states) %>;
+        const cities = <%= JSON.stringify(cities) %>;
+
+        // Handle country selection to populate states
+        $('#country').change(function() {
+            const countryCode = $(this).val();
+            $('#state').empty().append('<option value="">Select State</option>');
+
+            const filteredStates = states.filter(state => state.country_code === countryCode);
+            filteredStates.forEach(state => {
+                $('#state').append(`<option value="${state.state_code}">${state.state_name}</option>`);
+            });
+        });
+
+        // Handle state selection to populate cities
+        $('#state').change(function() {
+            const stateCode = $(this).val();
+            $('#city').empty().append('<option value="">Select City</option>');
+
+            const filteredCities = cities.filter(city => city.state_code === stateCode);
+            filteredCities.forEach(city => {
+                $('#city').append(`<option value="${city.city_name}">${city.city_name}</option>`);
+            });
+        });
+    </script>
+</body>
+</html>
+ 
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
+
+// Data storage (to be populated at server startup)
+let countries = [];
+let states = [];
+let cities = [];
+
+// Function to load the CSV data at server startup
+exports.loadData = () => {
+    // Load countries
+    fs.createReadStream(path.join(__dirname, '../data/countries.csv'))
+        .pipe(csv())
+        .on('data', (row) => {
+            countries.push(row);
+        })
+        .on('end', () => {
+            console.log('Countries CSV successfully processed');
+        });
+
+    // Load states
+    fs.createReadStream(path.join(__dirname, '../data/states.csv'))
+        .pipe(csv())
+        .on('data', (row) => {
+            states.push(row);
+        })
+        .on('end', () => {
+            console.log('States CSV successfully processed');
+        });
+
+    // Load cities
+    fs.createReadStream(path.join(__dirname, '../data/cities.csv'))
+        .pipe(csv())
+        .on('data', (row) => {
+            cities.push(row);
+        })
+        .on('end', () => {
+            console.log('Cities CSV successfully processed');
+        });
+};
+
+// Function to return the stored data for the dropdowns
+exports.getData = (req, res) => {
+    res.render('dropdown', { countries, states, cities });
+};
+ 
+const express = require('express');
+const router = express.Router();
+const dataController = require('../controller/dataController');
+
+// Route to display the dropdowns with countries, states, and cities
+router.get('/dropdown', dataController.getData);
+
+module.exports = router;
+ 
+console.log('Current Directory:', __dirname);
+ 
+app.use('/', countryRoutes);
+ 
+Controll
+ 
+st countryRoutes = require('./route/dataRoutes');
+ 
+const axios = require('axios');
+
+exports.getCountries = async (req, res) => {
+    try {
+        const response = await axios.get('https://restcountries.com/v3.1/all');
+        const countries = response.data.map(country => ({
+            code: country.cca2,
+            name: country.name.common
+        }));
+
+
+        countries.sort((a, b) => a.name.localeCompare(b.name));
+        res.render('countries', { countries });
+    } catch (error) {
+        console.error(error);
+        res.render('countries', { countries: [] });
+    }
+};
+ 
+const express = require('express');
+const router = express.Router();
+const countryController = require('../controller/dataController');
+
+router.get('/countries', countryController.getCountries);
+
+module.exports = router;
+ 
+   next();
+});
+
+
+app.use('/', countryRoutes);
+ 
+const countryRoutes = require('./route/dataRoutes');
+
+const app = express();
+
+app.set("view engine", "ejs");
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+
+mongoose.connect("mongodb://127.0.0.1:27017/Final year Project");
+
+app.use(session({
+    secret: "mysecretkey",
+    resave: true,
+    saveUninitialized: true,
+}));
+
+app.use(flash());
+
+app.use((req, res, next) => {
+    res.locals.message = req.flash("message");
+    res.locals.error_msg = req.flash("error_msg");
+ 
+// Sort countries alphabetically by name
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Country</title>
+</head>
+<body>
+    <h1>Select Country</h1>
+    <form action="/submit" method="POST"> <!-- Update the action as needed -->
+        <label for="country">Country:</label>
+        <select id="country" name="country">
+            <option value="">Select Country</option>
+            <% countries.forEach(country => { %>
+                <option value="<%= country.code %>"><%= country.name %></option>
+            <% }) %>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+ 
+// Sort countries alphabetically by name
+ 

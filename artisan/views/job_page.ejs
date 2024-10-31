@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisan Search Results</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: black;
+    }
+
+    .search-form {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+       
+    }
+
+    .search-form input[type="text"] {
+        flex-grow: 1;
+        margin-right: 10px;
+        height: 50px;
+    }
+
+    .artisan-details {
+        background-color: #fff;
+        margin: 10px;
+        width: 300px;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .about {
+            border: 1px solid green;
+            padding: 20px;
+            margin: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 700px;
+            margin-left: 280px;
+        }
+
+        .about h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .about p {
+            text-align: justify;
+            line-height: 1.6;
+            color: #666;
+        }
+        .search{
+            height: 50px;
+            width: 80px;
+        }
+        .advert-container {
+            border: 2px dotted #ccc;
+            width: 90%;
+            height: 200px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+        }
+        .advert-x {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .advert-x::before,
+        .advert-x::after {
+            content: '';
+            position: absolute;
+            width: 25%;
+            height: 2px;
+            background-color: #ccc;
+            top: 50%;
+            left: 50%;
+            z-index: 0;
+        }
+        .advert-x::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .advert-x::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        .advert-input {
+            position: relative;
+            z-index: 1;
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+            border: none;
+            background: none;
+            text-align: center;
+            outline: none;
+            width: 90%;
+        }
+</style>
+<body>
+    <h3><a href="/">ARTISAN OGBUEFI</a></h3>
+    <!-- <div class="about">
+    <h2>About Artisan Ogbuefi</h2>
+    <p>Artisan Ogbuefi is a platform dedicated to connecting skilled artisans with the people who need their services. We understand the importance of skilled labor and aim to bridge the gap between artisans and potential clients. Our platform allows artisans to showcase their skills and enables users to find the right artisan for their needs. Whether you're a carpenter, a plumber, a painter, or a craftsman, Artisan Ogbuefi is the place for you.</p> -->
+</div>
+    <div class="search-form">
+    <form action="/search" method="post">
+        <input type="text" name="searchParam" size="50" placeholder="Search for Skillset">
+        <input type="submit" value="Search" class="search">
+    </form>
+</div>
+
+<div class="advert-container">
+    <div class="advert-x"></div>
+    <input type="text" class="advert-input" placeholder="Place Advert Here" onfocus="this.previousElementSibling.style.display='none';" onblur="if(this.value === '') this.previousElementSibling.style.display='block';">
+</div>
+
+    <h3><%- searchParam %></h3>
+    <% if (results.length > 0) { %>
+        <% results.forEach((artisan) => { %>
+          <div class="artisan-details">
+            <h4>Name:<%- artisan.fn %> <%- artisan.ln %></h4>
+            <h5>Residence: <%- artisan.residence %></h5>
+            <h5>Email:<%- artisan.email %></h5>
+            <h5>CacStatus:<%- artisan.cacStatus %></h5>
+            <a href="/details/<%- artisan._id %>">View Profile</a>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p><%- message %></p>
+      <% } %>
+      
+
+    </body>
+</html>

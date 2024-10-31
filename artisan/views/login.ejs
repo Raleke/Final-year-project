@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+    }
+    h1 {
+        background-color: #333;
+        color: #fff;
+        padding: 10px 0;
+        margin: 0;
+        text-align: center;
+    }
+    h1 a {
+        color: #fff;
+        text-decoration: none;
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    form input[type="text"],
+    form input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    form input[type="submit"] {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+    form input[type="submit"]:hover {
+        background-color: #444;
+    }
+    a {
+        color: #333;
+        text-decoration: none;  
+        margin-right: 20px;  
+    }
+    a:hover {
+        color: #666;
+    }
+</style>
+<body>
+    <h1><a href="/">ARTISAN OGBUEFI</a></h1>
+    <p style="text-align: center; padding: 0 20px;">
+        Welcome to Artisan Ogbuefi, a platform dedicated to connecting skilled artisans with clients who need their services. Whether you're a carpenter, a plumber, a painter, or a craftsman of any sort, Artisan Ogbuefi is the place for you. Join us today and let's create something beautiful together.
+    </p>
+
+    <hr>
+
+      <% if(message !== ""){ %>
+        <h5 style="color: blue;"><%- message %></h5>
+   <% } %>
+
+   <% if(error_msg !== ""){ %>
+        <h5 style="color:red"><%- error_msg %></h5>
+        <% } %>
+
+        <h3>Artisan Login Form</h3>
+        <p>Please Enter your email and Password</p>
+
+        <form action="/login" method="post">
+            <p> Email: <input type="text" name="email"></p>
+            <p>Password: <input type="password" name="password"></p>
+
+            <input type="submit" value="Click to Login">
+        </form>
+
+        <a href="/login">Login</a>
+        <a href="/registration">Artisan Signup Form</a>
+</body>
+</html>

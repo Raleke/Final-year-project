@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3>Artisan Ogbuefi</h3>
+
+    <h3>Add Skills Page</h3>
+
+    
+
+    <p>Artisan Fullname: <span style="color: blue;"><%- fn %> <%- ln %></span></p>
+
+    <hr>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/addSkill">Add Skill</a>
+    <a href="/viewSkill">View Skill</a>
+    <a href="/logout">Click to Logout</a>
+
+    <% if(message !== ""){ %>
+        <h5 style="color: blue;"><%- message %></h5>
+   <% } %>
+
+   <% if(error_msg !== ""){ %>
+        <h5 style="color:red"><%- error_msg %></h5>
+        <% } %>
+
+        <hr>
+	<h3>Edit Page</h3>
+
+        <form action="/edit/<%-record._id %>" method="post">
+         
+            <% let states = ["Abia","Adamawa","Akwaibom","Bauchi","Bayelsa","Cross-River","Delta","Enugu","Edo","Jigawa","Lagos","Oyo","Plateau","Osun","Kano","Kaduna","Katsina","Rivers","Zamfara","Taribo","Gombe","Kogi","Kwara","Ogun","Fct","Anambra","Imo state","Ebonyi"]%>
+
+            <p>State of Residence:
+                <select name="residence">
+                    <option value="">Select State of Residence</option>
+
+                    <% states.forEach((stat)=>
+                    { %>
+                        <option value="<%- stat %>"<%- stat === record.residence ? "selected" : "" %>><%- stat %></option>
+                   <% }) %>
+                </select>
+            </p>
+            <p>Experience: <br>
+            <textarea name="experience" placeholder="Enter any Prior experience, if you have any" cols="30" rows="10"><%- record. experience %></textarea></p>
+           
+                <% let preferences = ["Part-time", "Full-time", "Contract"]%>
+
+                <p>Job Preference: <select name="job">
+                    <option value="">Select Job Preference</option>
+                    <% preferences.forEach((pref) =>{ %>
+                        <option value="<%- pref %>"<%- pref=== record.job ?"selected": ""%>><%- pref %></option>
+
+
+                <% }) %>
+                </select>
+            </p>
+
+            <% let qualifications = [ "FSLC", "HND", "BSc", "Diploma"]%>
+
+            <p>Educational qualification
+                (Certificate Obtained):
+            <select name="education">
+                <option value="">Select Educational qualification</option>
+
+                <% qualifications.forEach((qual)=>{ %>
+                    <option value="<%- qual %>"<%- qual=== record.education ? "selected": "" %>><%- qual %></option>
+            <% }) %>
+            </select>
+        </p>
+
+        <% let skills = [ "software development",
+        "commercial driving",
+        "web design",
+        "technical writing",
+        "culinary arts",
+        "music production",
+        "choreography",
+        "landscape design",
+        "fashion design",
+        "professional photography",
+        "motivational speaking",
+        "music teaching",
+        "branding and logo design",
+        "carpentry",
+        "competitive swimming",
+        "business analytics",
+        "data analysis",
+        "project management",
+        "financial planning",
+        "customer service"] %>
+
+      <p>Skillset: <select name="set">
+        <option value="">Select Skill set</option>
+
+        <%skills.forEach((skii)=>{ %>
+            <option value="<%- skii %>" <%= skii === record.set ? 'selected' : '' %>><%- skii %></option>
+            <% }) %>
+      </select>
+    </p>
+
+
+      
+    <input type="submit" value="Click to Edit" name="">
+        </form>
+
+</body>
+</html>
