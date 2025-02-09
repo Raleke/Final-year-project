@@ -3,11 +3,8 @@ const router = express.Router();
 const dataController = require('../controller/dataController');
 
 
-router.get('/dropdown', dataController.getData);
-
-
-router.get('/', (req, res) => {
-    res.redirect('/dropdown');
-});
+router.get('/countries', dataController.getCountries);
+router.get('/countries/states', dataController.getStates);
+router.get('/states/cities', dataController.getCities);
 
 module.exports = router;
